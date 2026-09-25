@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: sme-compliance-assistant
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+    properties:
+      security.protocol: SSL
+      ssl.truststore.location: ${kafka.ssl.truststore-location}
+      ssl.truststore.password: ${kafka.ssl.truststore-password}
+      ssl.truststore.type: ${kafka.ssl.truststore-type}
+      ssl.keystore.location: ${kafka.ssl.keystore-location}
+      ssl.keystore.password: ${kafka.ssl.keystore-password}
+      ssl.key.password: ${kafka.ssl.key-password}
+      ssl.keystore.type: ${kafka.ssl.keystore-type}
+
+server:
+  port: ${SERVER_PORT:8443}
+  ssl:
+    enabled: true
+    key-store: ${SERVER_SSL_KEY_STORE:file:docker/certs/api.keystore.p12}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD:changeit-local-dev}
+    key-store-type: PKCS12
+    key-alias: ${SERVER_SSL_KEY_ALIAS:sme-api}
+
+kafka:
+  ssl:
+    truststore-location: ${KAFKA_SSL_TRUSTSTORE_LOCATION:file:docker/certs/kafka.truststore.jks}
+    truststore-password: ${KAFKA_SSL_TRUSTSTORE_PASSWORD:changeit-local-dev}
+    truststore-type: ${KAFKA_SSL_TRUSTSTORE_TYPE:JKS}
+    keystore-location: ${KAFKA_SSL_KEYSTORE_LOCATION:file:docker/certs/kafka.broker.keystore.jks}
+    keystore-password: ${KAFKA_SSL_KEYSTORE_PASSWORD:changeit-local-dev}
+    key-password: ${KAFKA_SSL_KEY_PASSWORD:changeit-local-dev}
+    keystore-type: ${KAFKA_SSL_KEYSTORE_TYPE:JKS}

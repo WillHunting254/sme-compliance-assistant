@@ -43,8 +43,10 @@ sme-compliance-assistant/
 ├── mcp-server/
 │   └── server.py                 # MCP server skeleton (VAT, invoice format, category tools)
 ├── src/
-│   ├── main/java/be/<company>/smecompliance/   # Spring Boot app (not scaffolded yet)
-│   └── test/java/be/<company>/smecompliance/
+│   ├── main/java/be/willhunting/smecompliance/ # Spring Boot application
+│   ├── main/resources/application.yml           # HTTPS and Kafka TLS settings
+│   └── test/java/be/willhunting/smecompliance/
+├── pom.xml                       # Spring Boot 3 Maven project (Java 21)
 └── README.md
 ```
 
@@ -60,36 +62,42 @@ sme-compliance-assistant/
 2. **Start Kafka.** `docker compose up -d` — brings up a single
    TLS-only broker on `localhost:9093`.
 
-3. **Scaffold the Spring Boot app.** In Copilot Chat (Agent mode):
-   > "Set up a new Spring Boot 3 Maven project called
-   > sme-compliance-assistant with Spring Web, Spring Kafka, and
-   > Spring Validation, following copilot-instructions.md."
+3. **Run the Spring Boot application.**
+   ```
+   mvn spring-boot:run
+   ```
+   It starts HTTPS on `https://localhost:8443` and connects to Kafka
+   at `localhost:9093` using the generated TLS material.
 
-4. **Enable TLS on the API.** Run `/enable-tls` targeting "the REST
-   API (HTTPS)" to wire `server.ssl.*` against
-   `docker/certs/api.keystore.p12`.
-
-5. **Build the first endpoint.** Run `/new-endpoint` describing
+4. **Build the first endpoint.** Run `/new-endpoint` describing
    "accept an invoice submission and validate the VAT number."
 
-6. **Add the Kafka producer.** Run `/kafka-producer` for
+5. **Add the Kafka producer.** Run `/kafka-producer` for
    `invoice.submitted`, then `/enable-tls` targeting "the Kafka
    producer/consumer client" so it connects over SSL to the broker.
 
-7. **Build the consumer.** Run `/kafka-consumer` for
+6. **Build the consumer.** Run `/kafka-consumer` for
    `invoice.submitted`, wiring it to publish `invoice.validated` /
    `invoice.rejected` in turn.
 
-8. **Stand up the MCP server** (as before): `cd mcp-server`,
+7. **Stand up the MCP server** (as before): `cd mcp-server`,
    `pip install mcp`, implement `validate_vat_number` against the
    real VIES endpoint, connect it to Copilot so agent mode can call
-   it while building steps 5-7.
+   it while building steps 4-6.
 
 ## Notes
 - VIES: https://ec.europa.eu/taxation_customs/vies/
 - The cert-generation script and `docker/certs/` are local-dev only
   — never commit real certs, passwords, or use this setup in
   production as-is.
+- The HTTPS keystore defaults to `docker/certs/api.keystore.p12`;
+  override its path, password, or alias with `SERVER_SSL_KEY_STORE`,
+  `SERVER_SSL_KEY_STORE_PASSWORD`, and `SERVER_SSL_KEY_ALIAS`.
+- Kafka TLS defaults to the generated `kafka.truststore.jks` and
+  `kafka.broker.keystore.jks`; override them with
+  `KAFKA_SSL_TRUSTSTORE_LOCATION`,
+  `KAFKA_SSL_TRUSTSTORE_PASSWORD`, `KAFKA_SSL_KEYSTORE_LOCATION`,
+  `KAFKA_SSL_KEYSTORE_PASSWORD`, and `KAFKA_SSL_KEY_PASSWORD`.
 - Belgian invoice numbering and MAR chart-of-accounts rules aren't
   fully implemented on purpose — confirming and encoding them is
   part of the exercise.
